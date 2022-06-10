@@ -53,7 +53,6 @@ public class User extends BaseEntity {
 	private String username;
 	
 	@Column
-	@Size(max = 30)
 	private String password;
 	
 	@Column(updatable = false, nullable = false)
