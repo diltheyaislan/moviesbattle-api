@@ -6,7 +6,8 @@ plugins {
 
 group = 'com.diltheyaislan'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
+sourceCompatibility = '11'
+targetCompatibility = '11'
 
 configurations {
 	compileOnly {
