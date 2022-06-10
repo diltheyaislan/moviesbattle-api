@@ -26,8 +26,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.diltheyaislan.moviesbattle.api.core.exception.BusinessException;
+import com.diltheyaislan.moviesbattle.api.core.exception.StatusException;
 import com.diltheyaislan.moviesbattle.api.core.exception.handler.CommonError;
 import com.diltheyaislan.moviesbattle.api.domain.dto.SignUpDTO;
+import com.diltheyaislan.moviesbattle.api.domain.dto.UserAccessTokenDTO;
 import com.diltheyaislan.moviesbattle.api.domain.entity.User;
 import com.diltheyaislan.moviesbattle.api.domain.exception.UserAlreadySignedUpException;
 import com.diltheyaislan.moviesbattle.api.domain.repository.UserRepository;
@@ -59,7 +61,7 @@ public class AuthServiceTests {
 	}
 	
 	@Test
-	public void givenSignUpDTO_whenSignUpUser_shouldSaveAndReturnsCreatedUser() throws BusinessException {
+	public void givenSignUpDTO_whenSignUp_shouldSaveAndReturnsCreatedUser() throws BusinessException {
 		
 		User expectedUser = user;
 	
@@ -71,18 +73,18 @@ public class AuthServiceTests {
 		dto.setUsername("johndoe");
 		dto.setPassword("XPTO");
 		
-		User createdUser = authService.signUp(dto);
+		User userAccessTokenDTO = authService.signUp(dto);
 		
-		assertThat(createdUser.getId(), notNullValue());
-		assertThat(createdUser.getId().toString(), equalTo(expectedUser.getId().toString()));
-		assertThat(createdUser.getName().toString(), equalTo(expectedUser.getName()));
-		assertThat(createdUser.getUsername().toString(), equalTo(expectedUser.getUsername()));
-		assertThat(createdUser.getCreatedAt(), notNullValue());
-		assertThat(createdUser.getUpdatedAt(), notNullValue());
+		assertThat(userAccessTokenDTO.getId(), notNullValue());
+		assertThat(userAccessTokenDTO.getId().toString(), equalTo(expectedUser.getId().toString()));
+		assertThat(userAccessTokenDTO.getName().toString(), equalTo(expectedUser.getName()));
+		assertThat(userAccessTokenDTO.getUsername().toString(), equalTo(expectedUser.getUsername()));
+		assertThat(userAccessTokenDTO.getCreatedAt(), notNullValue());
+		assertThat(userAccessTokenDTO.getUpdatedAt(), notNullValue());
 	}
 	
 	@Test
-	public void givenSignUpDTO_whenSignUpUserWithAnExistingUsername_shouldThrowsUserAlreadySignedUpException() throws BusinessException {
+	public void givenSignUpDTO_whenSignUpWithAnExistingUsername_shouldThrowsUserAlreadySignedUpException() throws BusinessException {
 		
 		User existingUser = user;
 		
@@ -104,5 +106,51 @@ public class AuthServiceTests {
 
 		assertTrue(exceptionMessage.equalsIgnoreCase(expectedMessage));
 		assertTrue(Arrays.asList(exceptionArgs).contains(expectedExceptionArg));
+	}
+	
+	@Test
+	public void givenUsernameAndPassword_whenSignIn_shouldAuthenticatedAndReturnsAuthenticatedUserAndAcessToken() throws BusinessException {
+		
+		User expectedUser = user;
+		expectedUser.setPassword("$2a$10$3dcZA5vYP5brmxLjKS2OquMEwxGA17AIxwzhxkv6MJcLjeCY7Lg7.");
+	
+		when(userRepository.findOneByUsername((String) notNull())).thenReturn(Optional.of(expectedUser));
+		when(userRepository.save((User) notNull())).thenReturn(expectedUser);
+		
+		String username = "johndoe";
+		String password = "XPTO";
+		
+		UserAccessTokenDTO userAccessTokenDTO = authService.signIn(username, password);
+
+		assertThat(userAccessTokenDTO.getAccessToken(), notNullValue());
+		assertThat(userAccessTokenDTO.getUser().getId().toString(), equalTo(expectedUser.getId().toString()));
+		assertThat(userAccessTokenDTO.getUser().getName().toString(), equalTo(expectedUser.getName()));
+		assertThat(userAccessTokenDTO.getUser().getUsername().toString(), equalTo(expectedUser.getUsername()));
+		assertThat(userAccessTokenDTO.getUser().getCreatedAt(), notNullValue());
+		assertThat(userAccessTokenDTO.getUser().getUpdatedAt(), notNullValue());
+	}
+	
+	@Test
+	public void givenUsernameAndPassword_whenSignInWithInvalidCredentials_shouldBusinessExceptionWithBadCredentialsMessageAndUnauthorizedStatusException() {
+		
+		User existingUser = user;
+		existingUser.setPassword("$2a$10$3dcZA5vYP5brmxLjKS2OquMEwxGA17AIxwzhxkv6MJcLjeCY7Lg7.");
+		
+		when(userRepository.findOneByUsername((String) notNull())).thenReturn(Optional.of(existingUser));
+	
+		String username = "wrongUsername";
+		String password = "wrongPassword";
+		
+		BusinessException exception = assertThrows(BusinessException.class, () -> {
+			authService.signIn(username, password);
+		});
+		
+		String expectedMessage = "message.error.badCredentials";
+		StatusException expectedStatusException = StatusException.UNAUTHORIZED;
+		String exceptionMessage = exception.getMessage();
+		StatusException exceptionStatusException = exception.getStatus();
+
+		assertTrue(exceptionMessage.equalsIgnoreCase(expectedMessage));
+		assertTrue(exceptionStatusException == expectedStatusException);
 	}
 }

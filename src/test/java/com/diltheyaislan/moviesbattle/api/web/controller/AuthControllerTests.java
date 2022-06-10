@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -33,10 +32,13 @@ import com.diltheyaislan.moviesbattle.api.core.exception.StatusException;
 import com.diltheyaislan.moviesbattle.api.core.exception.handler.CommonError.Argument;
 import com.diltheyaislan.moviesbattle.api.core.exception.handler.ResponseCommonError;
 import com.diltheyaislan.moviesbattle.api.domain.dto.SignUpDTO;
+import com.diltheyaislan.moviesbattle.api.domain.dto.UserAccessTokenDTO;
 import com.diltheyaislan.moviesbattle.api.domain.entity.User;
 import com.diltheyaislan.moviesbattle.api.domain.exception.UserAlreadySignedUpException;
 import com.diltheyaislan.moviesbattle.api.domain.repository.UserRepository;
 import com.diltheyaislan.moviesbattle.api.domain.service.AuthService;
+import com.diltheyaislan.moviesbattle.api.web.request.SignInBodyRequest;
+import com.diltheyaislan.moviesbattle.api.web.request.SignUpBodyRequest;
 
 @SpringBootTest(
 		webEnvironment = WebEnvironment.RANDOM_PORT,
@@ -86,7 +88,7 @@ public class AuthControllerTests {
 	}
 	
 	@Test
-    public void givenValidRequest_whenSignUp_shouldReturnsCreatedUSer() throws BusinessException {
+    public void givenValidRequest_whenSignUp_shouldReturnsCreatedUser() throws BusinessException {
 
 		User expectedUser = user;
 		
@@ -146,7 +148,7 @@ public class AuthControllerTests {
 		String existingUsername = "johndoe";
 		when(authService.signUp((SignUpDTO) notNull())).thenThrow(new UserAlreadySignedUpException(existingUsername));
 		
-		SignUpDTO bodyRequest = new SignUpDTO();
+		SignUpBodyRequest bodyRequest = new SignUpBodyRequest();
 		bodyRequest.setName("John Doe");
 		bodyRequest.setUsername("johndoe");
 		bodyRequest.setPassword("XPTO");
@@ -166,6 +168,63 @@ public class AuthControllerTests {
 		Argument usernameArg = Argument.of("username", existingUsername);
 		
 		assertTrue(result.getError().getArgs().contains(usernameArg));
+    }
+	
+	@Test
+    public void givenValidRequest_whenSignIn_shouldReturnsAccessTokenAndAuthenticatedUser() throws BusinessException {
+
+		User expectedUser = user;
+		UserAccessTokenDTO userAccessTokenDTOExpected = UserAccessTokenDTO.builder()
+				.accessToken("eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiIyMzJiZTI2NS03NmYxLTRiYTgtYWYxYS01YzQ3NGVkOTNjZjAiLCJpYXQiOjE2NTQ4ODY4NTYsImV4cCI6MTY1NDg5MDQ1Nn0.21aUodbhO4gNZIsGZrN-PE5vLuR_NVYXDV-UAnC7lKMt7e5SKenUGI6XflwCm05c")
+				.user(expectedUser)
+				.build();
+		
+		when(authService.signIn((String) notNull(), (String) notNull())).thenReturn(userAccessTokenDTOExpected);
+		
+		SignInBodyRequest bodyRequest = new SignInBodyRequest();
+		bodyRequest.setUsername("johndoe");
+		bodyRequest.setPassword("XPTO");
+		
+		webClient
+			.post().uri("/auth/signin")
+			.bodyValue(bodyRequest)
+			.header("Accept-Language", "en")
+			.exchange()
+	    	.expectStatus()
+	    		.isOk()
+	    	.expectBody()
+	    		.jsonPath("accessToken").isNotEmpty()
+	    		.jsonPath("accessToken").isEqualTo(userAccessTokenDTOExpected.getAccessToken())	
+	    		.jsonPath("user.id").isEqualTo(expectedUser.getId().toString())
+	    		.jsonPath("user.name").isEqualTo(expectedUser.getName())
+	    		.jsonPath("user.username").isEqualTo(bodyRequest.getUsername());
+    }
+	
+	@Test
+    public void givenRequest_whenSignInWithInvalidCredentials_shouldReturnsUnauthorizedAndResponseErrorWithBadCredentialsMessage() throws BusinessException {
+    	
+		String expectedErrorMessage = "Bad credentials";
+		
+		when(authService.signIn((String) notNull(), (String) notNull())).thenThrow(new BusinessException(
+				StatusException.UNAUTHORIZED, "message.error.badCredentials"));
+		
+		SignInBodyRequest bodyRequest = new SignInBodyRequest();
+		bodyRequest.setUsername("wrongUsername");
+		bodyRequest.setPassword("wrongPassword");
+		
+		var result 
+			= webClient
+				.post().uri("/auth/signin")
+				.bodyValue(bodyRequest)
+				.header("Accept-Language", "en")
+				.exchange()
+				.expectStatus()
+					.isUnauthorized()
+	    		.expectBody(ResponseCommonError.class)
+	    			.returnResult()
+	    			.getResponseBody();
+		
+		assertTrue(result.getError().getMessage().equalsIgnoreCase(expectedErrorMessage));
     }
 	
 	private Argument createArgument(String name, String messageCode) {
