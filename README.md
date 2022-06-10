@@ -31,7 +31,7 @@ Use **swagger.properties** file in */src/main/resources/* (memorify-application)
 
 
 ## Postman collections
-Postman environment variable collection files are in the `/postman` directory.
+Postman environment variable and collection files are in the `/postman` directory.
 
 
 ## H2 console
