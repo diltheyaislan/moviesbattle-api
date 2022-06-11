@@ -11,13 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.diltheyaislan.moviesbattle.api.core.exception.ResourceNotFoundException;
 import com.diltheyaislan.moviesbattle.api.domain.entity.User;
-import com.diltheyaislan.moviesbattle.api.domain.repository.UserRepository;
+import com.diltheyaislan.moviesbattle.api.domain.repository.IUserRepository;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
 	@Autowired
-    UserRepository userRepository;
+    IUserRepository userRepository;
 
     @Override
     @Transactional

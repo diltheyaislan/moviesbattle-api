@@ -18,14 +18,14 @@ import com.diltheyaislan.moviesbattle.api.domain.dto.UserAccessTokenDTO;
 import com.diltheyaislan.moviesbattle.api.domain.entity.User;
 import com.diltheyaislan.moviesbattle.api.domain.entity.factory.UserFactory;
 import com.diltheyaislan.moviesbattle.api.domain.exception.UserAlreadySignedUpException;
-import com.diltheyaislan.moviesbattle.api.domain.repository.UserRepository;
+import com.diltheyaislan.moviesbattle.api.domain.repository.IUserRepository;
 import com.diltheyaislan.moviesbattle.api.security.jwt.JwtTokenProvider;
 
 @Service
 public class AuthService {
 
 	@Autowired
-	private UserRepository userRepository;
+	private IUserRepository userRepository;
 	
 	@Autowired
     private AuthenticationManager authenticationManager;
