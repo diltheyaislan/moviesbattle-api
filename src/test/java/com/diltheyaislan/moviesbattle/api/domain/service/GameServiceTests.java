@@ -33,6 +33,7 @@ import com.diltheyaislan.moviesbattle.api.domain.entity.Game;
 import com.diltheyaislan.moviesbattle.api.domain.entity.GameRound;
 import com.diltheyaislan.moviesbattle.api.domain.entity.Movie;
 import com.diltheyaislan.moviesbattle.api.domain.entity.User;
+import com.diltheyaislan.moviesbattle.api.domain.entity.UserScore;
 import com.diltheyaislan.moviesbattle.api.domain.entity.enums.GameStatus;
 import com.diltheyaislan.moviesbattle.api.domain.exception.GameOverException;
 import com.diltheyaislan.moviesbattle.api.domain.exception.GameRoundNotCreatedException;
@@ -41,6 +42,7 @@ import com.diltheyaislan.moviesbattle.api.domain.exception.UserHasNoGameInProgre
 import com.diltheyaislan.moviesbattle.api.domain.repository.IGameRepository;
 import com.diltheyaislan.moviesbattle.api.domain.repository.IGameRoundRepository;
 import com.diltheyaislan.moviesbattle.api.domain.repository.IMovieRepository;
+import com.diltheyaislan.moviesbattle.api.domain.repository.IUserScoreRepository;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -57,6 +59,9 @@ public class GameServiceTests {
 	
 	@MockBean
 	private IGameRoundRepository gameRoundRepository;
+	
+	@MockBean
+	private IUserScoreRepository userScoreRepository;
 
 	private Game game;
 	private GameRound gameRound;
@@ -283,6 +288,7 @@ public class GameServiceTests {
 		
 		when(gameRepository.findOneByUserAndStatus((User) notNull(), (GameStatus) notNull())).thenReturn(Optional.of(expectedGame));
 		when(gameRepository.save((Game) notNull())).thenReturn(expectedGame);
+		when(userScoreRepository.save((UserScore) notNull())).thenReturn(null);
 	
 		UUID userId = UUID.fromString("d4f9c7e4-9643-4314-9b41-fe42f24a42ec");
 		String movieIdAnswer = "xpto2";
@@ -323,6 +329,7 @@ public class GameServiceTests {
 		
 		when(gameRepository.findOneByUserAndStatus((User) notNull(), (GameStatus) notNull())).thenReturn(Optional.of(expectedGame));
 		when(gameRepository.save((Game) notNull())).thenReturn(game);
+		when(userScoreRepository.save((UserScore) notNull())).thenReturn(null);
 	
 		UUID userId = UUID.fromString("d4f9c7e4-9643-4314-9b41-fe42f24a42ec");
 		
