@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.diltheyaislan.moviesbattle.api.domain.entity.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID>  {
+public interface IUserRepository extends JpaRepository<User, UUID>  {
 
 	public Optional<User> findOneByUsername(String username);
 }

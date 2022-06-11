@@ -1,27 +1,26 @@
 package com.diltheyaislan.moviesbattle.api.domain.entity;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import com.diltheyaislan.moviesbattle.api.domain.entity.enums.GameStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,8 +33,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper=false, exclude = {"rounds"})
-public class Game extends BaseEntity {
+@EqualsAndHashCode(callSuper=false, exclude = {"game"})
+public class GameRound extends BaseEntity {
 
 	private static final long serialVersionUID = 1L;
 
@@ -51,16 +50,11 @@ public class Game extends BaseEntity {
 	private UUID id;
 	
 	@Column
-	@Enumerated(EnumType.STRING)
-	private GameStatus status;
-	
-	@Column(precision = 3, scale = 2)
-	private Double result;
+	private Boolean answered;
 	
 	@Column
-	@ColumnDefault("0")
-	private Integer wrongAnswerCount;
-
+	private Boolean userCorrectAnswer;
+	
 	@Column(updatable = false, nullable = false)
 	@CreationTimestamp
 	private LocalDateTime createdAt;
@@ -70,9 +64,15 @@ public class Game extends BaseEntity {
 	private LocalDateTime updatedAt;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id")
-	private User user;
+	@JoinColumn(name = "game_id")
+	private Game game;
 	
-	@OneToMany(mappedBy="game")
-    private Set<GameRound> rounds;
+	@ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
+        name = "game_round_option", 
+        joinColumns = { @JoinColumn(name = "game_round_id") }, 
+        inverseJoinColumns = { @JoinColumn(name = "movie_id") }
+    )
+	@Builder.Default
+    private Set<Movie> movies = new HashSet<>();
 }
