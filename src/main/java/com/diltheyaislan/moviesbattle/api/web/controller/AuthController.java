@@ -74,8 +74,8 @@ public class AuthController extends BaseController {
 		UserResponse userResponse = new UserResponse();
         BeanUtils.copyProperties(userAccessToken.getUser(), userResponse);
         
-        return ResponseEntity.ok(new UserAccessTokenResponse(
-        		userAccessToken.getAccessToken(),
-        		userResponse));
+        return buildResponse(
+        		new UserAccessTokenResponse(userAccessToken.getAccessToken(), userResponse), 
+        		HttpStatus.OK);
 	}
 }

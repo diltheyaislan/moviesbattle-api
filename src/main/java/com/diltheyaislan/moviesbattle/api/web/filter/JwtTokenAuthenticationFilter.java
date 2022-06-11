@@ -11,10 +11,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -27,16 +29,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@RequiredArgsConstructor
+@Component
+@AllArgsConstructor
+@NoArgsConstructor
 public class JwtTokenAuthenticationFilter extends GenericFilterBean {
     
     public static final String HEADER_PREFIX = "Bearer ";
     
-    private final JwtTokenProvider jwtTokenProvider;
-  
-    private final UserDetailsServiceImpl userDetailsService;
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsService;
     
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
@@ -44,8 +51,6 @@ public class JwtTokenAuthenticationFilter extends GenericFilterBean {
         
     	try {
             String jwt = getJwtFromRequest((HttpServletRequest) request);
-            
-            System.out.println("SER " + userDetailsService);
             
             if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
                 UUID userId = jwtTokenProvider.getUserIdFromToken(jwt);
@@ -56,7 +61,7 @@ public class JwtTokenAuthenticationFilter extends GenericFilterBean {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
             filterChain.doFilter(request, response);
-        } catch (ExpiredJwtException ex) {         
+        } catch (ExpiredJwtException ex) {
         	response.setContentType("application/json");
         	((HttpServletResponse)response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         	response.getOutputStream().println(buildResponse(StatusException.UNAUTHORIZED, "Expired token"));

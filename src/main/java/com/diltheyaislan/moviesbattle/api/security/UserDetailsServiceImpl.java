@@ -16,7 +16,7 @@ import com.diltheyaislan.moviesbattle.api.domain.repository.UserRepository;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    @Autowired
+	@Autowired
     UserRepository userRepository;
 
     @Override

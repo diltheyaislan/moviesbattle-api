@@ -20,7 +20,6 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.diltheyaislan.moviesbattle.api.security.UserDetailsServiceImpl;
-import com.diltheyaislan.moviesbattle.api.security.jwt.JwtTokenProvider;
 import com.diltheyaislan.moviesbattle.api.web.filter.JwtTokenAuthenticationFilter;
 
 @Configuration
@@ -33,23 +32,27 @@ import com.diltheyaislan.moviesbattle.api.web.filter.JwtTokenAuthenticationFilte
 public class SecurityConfiguration {
 	
 	@Bean
-	public SecurityFilterChain springWebFilterChain(HttpSecurity http,
-                                             JwtTokenProvider tokenProvider, UserDetailsServiceImpl userDetailsService) throws Exception {
+    public JwtTokenAuthenticationFilter tokenAuthenticationFilter() {
+        return new JwtTokenAuthenticationFilter();
+    }
+	
+	@Bean
+	public SecurityFilterChain springWebFilterChain(HttpSecurity http) throws Exception {
         http
 	        .httpBasic(AbstractHttpConfigurer::disable)
 	        .csrf(AbstractHttpConfigurer::disable)
 	        .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	        .exceptionHandling(c-> c.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
 	        .authorizeRequests(c -> c
-	            .antMatchers("/auth/signup", "/auth/signin")
-	            	.permitAll()
-	            .antMatchers("/h2-console/**")
-	    			.permitAll()
+	        	.antMatchers("/auth/**")
+	        		.permitAll()
+	        	.antMatchers("/h2-console/**")
+	        		.permitAll()
 	            .anyRequest()
 	            	.authenticated()
 	        )
 	        .addFilterBefore(
-	        		new JwtTokenAuthenticationFilter(tokenProvider, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+	        		tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         http.headers().frameOptions().disable();
         return http.build();
     }

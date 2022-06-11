@@ -25,7 +25,7 @@ import com.diltheyaislan.moviesbattle.api.security.jwt.JwtTokenProvider;
 public class AuthService {
 
 	@Autowired
-	UserRepository userRepository;
+	private UserRepository userRepository;
 	
 	@Autowired
     private AuthenticationManager authenticationManager;
@@ -54,12 +54,9 @@ public class AuthService {
 	private void validateIfUserAlreadySignedUp(User user) throws UserAlreadySignedUpException {
 
 		Optional<User> optionalUser = userRepository.findOneByUsername(user.getUsername());
-
-		if (optionalUser.isEmpty()) {
-			return;
+		if (!optionalUser.isEmpty()) {
+			throw new UserAlreadySignedUpException(optionalUser.get().getUsername());
 		}
-		
-		throw new UserAlreadySignedUpException(optionalUser.get().getUsername());
 	}
 
 	private String authenticate(String username, String password) throws BusinessException {
