@@ -17,4 +17,8 @@ security:
   jwt:
     token:
       secret-key: 2394eeac9fc3db56189a894e221220b6089e78d3 
-      expire-length: 3600000
+      expire-length: 36000000
+
+app:
+  domain.game.totalAttempts: 3
+  provider.movies.imbdTopMoviesUrl: https://www.imdb.com/chart/top
