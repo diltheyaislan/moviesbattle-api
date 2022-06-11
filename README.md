@@ -1,5 +1,11 @@
 # Movies Battle API
 Movies Battle API using Java and Spring
+This API is a card game where the user needs to select the highest scoring card based on the website www.imdb.com<https://www.imdb.com/>.
+
+## Screenshots
+
+<>
+
 
 ## Running local
 
@@ -8,6 +14,7 @@ Via terminal:
 ```sh
 .\gradlew bootRun
 ```
+
 
 ## Unit tests
 
@@ -18,11 +25,13 @@ Via terminal:
 ```
 A test report is generated in '*.\build\reports\tests\test\index.html*'.
 
+
 ## API Documentation
 
 The project uses `Swagger` with `sprigdoc-openapi` (<https://springdoc.org/>) for API Documentation.
 
-Use **swagger.properties** file in */src/main/resources/* (memorify-application) to define annotation constants.
+Use **swagger.properties** file in */src/main/resources/* to define annotation constants.
+
 
 ### To access API Documentation via browser
 
