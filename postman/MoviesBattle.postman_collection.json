@@ -104,13 +104,120 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{api_host}}/game/start",
+							"raw": "{{api_host}}/games",
 							"host": [
 								"{{api_host}}"
 							],
 							"path": [
-								"game",
-								"start"
+								"games"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "next round",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_host}}/games/next-round",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"games",
+								"next-round"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "answer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"if (jsonData) {\r",
+									"    var id =  jsonData.id;\r",
+									"    if (id) {\r",
+									"        pm.environment.set(\"game_id\", id);\r",
+									"    }\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"movieId\": \"tt6710474\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_host}}/games/answers",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"games",
+								"answers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "finish",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"if (jsonData) {\r",
+									"    var id =  jsonData.id;\r",
+									"    if (id) {\r",
+									"        pm.environment.set(\"game_id\", id);\r",
+									"    }\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{api_host}}/games/finish",
+							"host": [
+								"{{api_host}}"
+							],
+							"path": [
+								"games",
+								"finish"
 							]
 						}
 					},
