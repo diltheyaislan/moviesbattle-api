@@ -13,7 +13,7 @@ Sign in
 
 ![signin](https://raw.githubusercontent.com/diltheyaislan/moviesbattle-api/master/docs/signin.jpg)
 
-Start gamme
+Start game
 
 ![startgame](https://raw.githubusercontent.com/diltheyaislan/moviesbattle-api/master/docs/startgame.jpg)
 
