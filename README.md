@@ -1,11 +1,37 @@
 # Movies Battle API
-Movies Battle API using Java and Spring
-This API is a card game where the user needs to select the highest scoring card based on the website www.imdb.com<https://www.imdb.com/>.
+Movies Battle API using Java and Spring.
+
+This API is a card game where the user needs to select the highest scoring card based on the website [imdb](https://www.imdb.com).
 
 ## Screenshots
 
-<>
+Sign up
 
+![signup](https://raw.githubusercontent.com/diltheyaislan/moviesbattle-api/master/docs/signup.jpg)
+
+Sign in
+
+![signin](https://raw.githubusercontent.com/diltheyaislan/moviesbattle-api/master/docs/signin.jpg)
+
+Start gamme
+
+![startgame](https://raw.githubusercontent.com/diltheyaislan/moviesbattle-api/master/docs/startgame.jpg)
+
+Next round
+
+![nextround](https://raw.githubusercontent.com/diltheyaislan/moviesbattle-api/master/docs/nextround.jpg)
+
+Submit answer
+
+![answer](https://raw.githubusercontent.com/diltheyaislan/moviesbattle-api/master/docs/answer.jpg)
+
+Finish game
+
+![finish](https://raw.githubusercontent.com/diltheyaislan/moviesbattle-api/master/docs/finish.jpg)
+
+Scoreboard
+
+![scoreboard](https://raw.githubusercontent.com/diltheyaislan/moviesbattle-api/master/docs/scoreboard.jpg)
 
 ## Running local
 
