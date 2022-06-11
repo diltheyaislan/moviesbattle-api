@@ -28,7 +28,7 @@ import com.diltheyaislan.moviesbattle.api.domain.dto.SignUpDTO;
 import com.diltheyaislan.moviesbattle.api.domain.dto.UserAccessTokenDTO;
 import com.diltheyaislan.moviesbattle.api.domain.entity.User;
 import com.diltheyaislan.moviesbattle.api.domain.exception.UserAlreadySignedUpException;
-import com.diltheyaislan.moviesbattle.api.domain.repository.UserRepository;
+import com.diltheyaislan.moviesbattle.api.domain.repository.IUserRepository;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -38,7 +38,7 @@ public class AuthServiceTests {
 	private AuthService authService;
 	
 	@MockBean
-	private UserRepository userRepository;
+	private IUserRepository userRepository;
 
 	private User user;
 	

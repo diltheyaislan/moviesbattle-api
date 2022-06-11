@@ -31,7 +31,7 @@ import com.diltheyaislan.moviesbattle.api.domain.dto.SignUpDTO;
 import com.diltheyaislan.moviesbattle.api.domain.dto.UserAccessTokenDTO;
 import com.diltheyaislan.moviesbattle.api.domain.entity.User;
 import com.diltheyaislan.moviesbattle.api.domain.exception.UserAlreadySignedUpException;
-import com.diltheyaislan.moviesbattle.api.domain.repository.UserRepository;
+import com.diltheyaislan.moviesbattle.api.domain.repository.IUserRepository;
 import com.diltheyaislan.moviesbattle.api.domain.service.AuthService;
 import com.diltheyaislan.moviesbattle.api.web.request.SignInBodyRequest;
 import com.diltheyaislan.moviesbattle.api.web.request.SignUpBodyRequest;
@@ -51,7 +51,7 @@ public class AuthControllerTests {
     private AuthService authService;
 
 	@MockBean
-    private UserRepository userRepository;
+    private IUserRepository userRepository;
 	
 	private MessageSource messageSource;
 	

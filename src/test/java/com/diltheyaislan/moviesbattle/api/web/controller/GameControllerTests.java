@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -21,17 +22,24 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import com.diltheyaislan.moviesbattle.api.MoviesbattleApplication;
 import com.diltheyaislan.moviesbattle.api.core.exception.BusinessException;
 import com.diltheyaislan.moviesbattle.api.core.exception.ResourceNotFoundException;
+import com.diltheyaislan.moviesbattle.api.core.exception.TechnicalException;
 import com.diltheyaislan.moviesbattle.api.core.exception.handler.CommonError.Argument;
 import com.diltheyaislan.moviesbattle.api.core.exception.handler.ResponseCommonError;
+import com.diltheyaislan.moviesbattle.api.domain.dto.AnswerResultDTO;
+import com.diltheyaislan.moviesbattle.api.domain.dto.enums.AnswerResult;
 import com.diltheyaislan.moviesbattle.api.domain.entity.Game;
+import com.diltheyaislan.moviesbattle.api.domain.entity.GameRound;
+import com.diltheyaislan.moviesbattle.api.domain.entity.Movie;
 import com.diltheyaislan.moviesbattle.api.domain.entity.User;
 import com.diltheyaislan.moviesbattle.api.domain.entity.enums.GameStatus;
+import com.diltheyaislan.moviesbattle.api.domain.exception.GameOverException;
 import com.diltheyaislan.moviesbattle.api.domain.exception.UserAlreadyHasGameInProgressException;
-import com.diltheyaislan.moviesbattle.api.domain.repository.GameRepository;
+import com.diltheyaislan.moviesbattle.api.domain.repository.IGameRepository;
 import com.diltheyaislan.moviesbattle.api.domain.service.GameService;
 import com.diltheyaislan.moviesbattle.api.security.UserDetailsServiceImpl;
 import com.diltheyaislan.moviesbattle.api.security.UserPrincipal;
 import com.diltheyaislan.moviesbattle.api.security.jwt.JwtTokenProvider;
+import com.diltheyaislan.moviesbattle.api.web.request.CreateAnswerBodyRequest;
 
 @SpringBootTest(
 		webEnvironment = WebEnvironment.RANDOM_PORT,
@@ -51,7 +59,7 @@ public class GameControllerTests {
     private GameService gameService;
 
 	@MockBean
-    private GameRepository gameRepository;
+    private IGameRepository gameRepository;
 	
 	@MockBean 
 	private UserPrincipal userPrincipal;
@@ -61,6 +69,8 @@ public class GameControllerTests {
 	
 	private Game game;
 	private User user;
+	private GameRound gameRound;
+	private Movie movie1, movie2;
 	
 	private String accessToken;
 	
@@ -79,6 +89,32 @@ public class GameControllerTests {
 		game.setUser(user);
 		game.setCreatedAt(LocalDateTime.of(2022, 3, 29, 10, 30, 45));
 		game.setUpdatedAt(LocalDateTime.of(2022, 3, 29, 10, 30, 45));
+		
+		movie1 = Movie.builder()
+				.id("xpto1")
+				.title("XPTO 1")
+				.rating(1D)
+				.numberVotes(1)
+				.score(1D)
+				.build();
+		
+		movie2 = Movie.builder()
+				.id("xpto2")
+				.title("XPTO 2")
+				.rating(1D)
+				.numberVotes(1)
+				.score(1D)
+				.build();
+					
+		gameRound = GameRound.builder()
+				.id(UUID.fromString("17bf5840-1878-4fb1-b580-44f49770773e"))
+				.game(game)
+				.answered(false)
+				.userCorrectAnswer(false)
+				.movies(Set.of(movie1, movie2))
+				.build();
+		
+		game.setRounds(Set.of(gameRound));
 	
 		UserPrincipal userPrincipal = UserPrincipal.builder().id(user.getId()).build();
 		when(userDetailsServiceImpl.loadUserById((UUID) notNull())).thenReturn(userPrincipal);
@@ -93,7 +129,7 @@ public class GameControllerTests {
 		when(gameService.start((UUID) notNull())).thenReturn(game);
 		
 		webClient
-			.post().uri("/game/start")
+			.post().uri("/games")
 			.header("Accept-Language", "en")
 			.header("Authorization", "Bearer " + accessToken)
 			.exchange()
@@ -112,7 +148,7 @@ public class GameControllerTests {
 		
 		var result 
 			= webClient
-				.post().uri("/game/start")
+				.post().uri("/games")
 				.header("Accept-Language", "en")
 				.header("Authorization", "Bearer " + accessToken)
 				.exchange()
@@ -127,5 +163,69 @@ public class GameControllerTests {
 
 		assertTrue(result.getError().getMessage().equalsIgnoreCase(expectedErrorMessage));
 		assertTrue(result.getError().getArgs().contains(expectedGameId));
+    }
+	
+	@Test
+    public void givenRequest_whenGoesNextRound_shouldReturnsCurrentGameRound() throws BusinessException, TechnicalException {
+    	
+		GameRound expectedGameRound = gameRound;
+		when(gameService.nextRound((UUID) notNull())).thenReturn(expectedGameRound);
+		
+		webClient
+			.get().uri("/games/next-round")
+			.header("Accept-Language", "en")
+			.header("Authorization", "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+				.isOk()
+		    .expectBody()
+	    		.jsonPath("cards").isNotEmpty()
+	    		.jsonPath("cards").isArray();
+    }
+	
+	@Test
+    public void givenRequest_whenAnswer_shouldReturnsExpectedResult() throws BusinessException, TechnicalException, GameOverException {
+    	
+		AnswerResultDTO result = AnswerResultDTO.builder()
+				.remainingAttempts(3)
+				.result(AnswerResult.RIGHT)
+				.build();
+		when(gameService.createAnswer((UUID) notNull(), (String) notNull())).thenReturn(result);
+		
+		CreateAnswerBodyRequest bodyRequest = new CreateAnswerBodyRequest();
+		bodyRequest.setMovieId("xpto1");
+		
+		webClient
+			.post().uri("/games/answers")
+			.header("Accept-Language", "en")
+			.header("Authorization", "Bearer " + accessToken)
+			.bodyValue(bodyRequest)
+			.exchange()
+			.expectStatus()
+				.isOk()
+		    .expectBody()
+	    		.jsonPath("result").isEqualTo(result.getResult().toString())
+	    		.jsonPath("remainingAttempts").isEqualTo(result.getRemainingAttempts());
+    }
+	
+	@Test
+    public void givenRequest_whenFinishGame_shouldReturnsExpectedResult() throws BusinessException, TechnicalException, GameOverException {
+    	
+		Game expectedGame = game;
+		expectedGame.setStatus(GameStatus.FINISHED);
+		
+		when(gameService.finish((UUID) notNull())).thenReturn(expectedGame);
+
+		webClient
+			.patch().uri("/games/finish")
+			.header("Accept-Language", "en")
+			.header("Authorization", "Bearer " + accessToken)
+			.exchange()
+			.expectStatus()
+				.isOk()
+		    .expectBody()
+	    		.jsonPath("id").isEqualTo(expectedGame.getId().toString())
+	    		.jsonPath("status").isEqualTo(expectedGame.getStatus().toString())
+	    		.jsonPath("result").isEqualTo(expectedGame.getResult());
     }
 }
