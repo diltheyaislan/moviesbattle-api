@@ -46,6 +46,9 @@ public class GameService {
 	@Autowired
 	private IMovieRepository movieRepository;
 	
+	@Autowired
+	private UserScoreService userScoreService;
+	
 	@Value("${app.domain.game.totalAttempts}")
 	private int totalAttempts = 3;
 	
@@ -136,6 +139,9 @@ public class GameService {
 		double gameResult = calculateGameResult(game.getRounds());
 		game.setResult(gameResult);
 		game.setStatus(GameStatus.FINISHED);
+		
+		userScoreService.incrementScore(game.getUser(), gameResult);
+		
 		return gameRepository.save(game);
 	}
 	
