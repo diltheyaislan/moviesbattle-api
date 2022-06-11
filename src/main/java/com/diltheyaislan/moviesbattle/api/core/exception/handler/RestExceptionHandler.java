@@ -22,6 +22,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.diltheyaislan.moviesbattle.api.core.exception.BusinessException;
 import com.diltheyaislan.moviesbattle.api.core.exception.handler.CommonError.Argument;
 import com.diltheyaislan.moviesbattle.api.core.locale.LocaleMessageSource;
+import com.diltheyaislan.moviesbattle.api.domain.exception.GameOverException;
 
 import lombok.AllArgsConstructor;
 
@@ -79,7 +80,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		logger.warn("Handled BusinessException");
 		return handleExceptionInternal(ex, buildResponse(error), new HttpHeaders(), status, request);
 	}
-	
+
+	@ExceptionHandler(GameOverException.class)
+	public ResponseEntity<Object> handleGameOverException(GameOverException ex, WebRequest request) {
+		
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		
+		GameOverException.Response response = ex.getResponse();
+		response.setMessage(getInterpolatedMessage(ex.getMessage()));
+		
+		logger.warn("Handled GameOverException");
+		return handleExceptionInternal(ex, response, new HttpHeaders(), status, request);
+	}
 	
 	private CommonError buildCommonError(Integer httpStatus, String message, List<Argument> errorArgs) {
 		return buildCommonError(httpStatus, message, null, errorArgs);
